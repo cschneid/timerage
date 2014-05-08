@@ -30,20 +30,26 @@ module Timerage
         an_obj.respond_to?(:end)
     end
 
+    # ---
+    #
+    # This is implemented in a slightly more procedural style than i
+    # prefer because we want to work well with ActiveSupport::Duration
+    # steps. Adding a Duration to a time uses the timezone (dst, etc),
+    # leap second and leap day aware `#advance` method in
+    # ActiveSupport. However, multiplying a Duration by a number
+    # returns a number, rather than a duration. This, in turn, means
+    # that adding a duration times a number to a time results in
+    # Timely incorrect results. So we do it the hard way.
     def time_enumerator(step)
-      not_done = if exclude_end?
-                   ->(nxt) { nxt < self.end }
-                 else
-                   ->(nxt) { nxt <= self.end }
-                 end
+      count = (self.end - self.begin).div(step)
+      count += 1 if !exclude_end? and (self.end - self.begin) % step == 0
+      # We've included our end if it should be
 
       Enumerator.new do |y|
-        nxt = self.begin
+        y << last = self.begin
 
-        while not_done.call(nxt) do
-          y << nxt
-
-          nxt += step
+        (count-1).times do
+          y << last = last + step
         end
       end
     end
