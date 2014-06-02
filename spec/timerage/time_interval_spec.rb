@@ -1,6 +1,9 @@
 require_relative "../spec_helper"
 
 describe Timerage::TimeInterval do
+  let(:now) { Time.now }
+  let(:duration) { 3600 }
+
   describe "creation" do
     specify { expect(described_class.new(now-1..now)).to be_kind_of described_class }
     specify { expect(described_class.new(now-1, now)).to be_kind_of described_class }
@@ -30,6 +33,10 @@ describe Timerage::TimeInterval do
     specify { expect{|b| interval.step(1200, &b) }
         .to yield_successive_args now-duration, now-(duration-1200), now-(duration-2400), now }
 
+    context "duration of non-integer steps" do
+      specify { expect{|b| interval.step(1000, &b) }
+          .to yield_successive_args now-duration, now-(duration-1000), now-(duration-2000), now-(duration-3000) }
+    end
   end
 
   context "interval exclude end" do
@@ -46,9 +53,6 @@ describe Timerage::TimeInterval do
         .to yield_successive_args now-duration, now-(duration-1200), now-(duration-2400) }
 
   end
-
-  let(:now) { Time.now }
-  let(:duration) { 3600 }
 
   matcher :behave_like_a do |expected|
     match do |actual|

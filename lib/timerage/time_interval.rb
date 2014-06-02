@@ -41,8 +41,8 @@ module Timerage
     # that adding a duration times a number to a time results in
     # Timely incorrect results. So we do it the hard way.
     def time_enumerator(step)
-      count = (self.end - self.begin).div(step)
-      count += 1 if !exclude_end? and (self.end - self.begin) % step == 0
+      count = (self.end - self.begin).div(step) + 1
+      count -= 1 if exclude_end? and (self.end - self.begin) % step == 0
       # We've included our end if it should be
 
       Enumerator.new do |y|
