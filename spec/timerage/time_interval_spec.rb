@@ -21,6 +21,10 @@ describe Timerage::TimeInterval do
       .and (be <= interval.end) }
   specify { expect{|b| interval.step(1200, &b) }
       .to yield_control.at_least(:once) }
+  specify { expect(interval.iso8601)
+            .to eq "#{interval.begin.iso8601}/#{interval.end.iso8601}" }
+  specify { expect(interval.iso8601(3))
+            .to eq "#{interval.begin.iso8601(3)}/#{interval.end.iso8601(3)}" }
 
   context "interval include end" do
     specify { expect(interval.exclude_end?).to be false }

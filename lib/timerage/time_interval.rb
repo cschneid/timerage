@@ -23,6 +23,12 @@ module Timerage
       end
     end
 
+    # Returns and ISO8601 interval representation of self
+    # Takes same args as Time#iso8601
+    def iso8601(*args)
+      "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
+    end
+
     protected
 
     def rangeish?(an_obj)
