@@ -11,6 +11,14 @@ describe Timerage::TimeInterval do
     specify { expect(described_class.new(now-1, now, false )).to be_kind_of described_class }
   end
 
+  describe ".iso8601" do
+    specify { expect(described_class
+                      .iso8601("2001-01-01T00:00:00Z/2001-01-02T00:00:00-06:00"))
+                .to be_kind_of described_class }
+    specify { expect{described_class.iso8601("2001-01-01T00:00:00Z")}
+                .to raise_error ArgumentError }
+  end
+
   subject(:interval) { described_class.new(now-duration, now) }
 
   it { is_expected.to behave_like_a Range }
