@@ -65,6 +65,10 @@ module Timerage
 
     # Returns a new TimeInterval representation of the iso8601 interval
     # represented by the specified string.
+    #
+    # --
+    #
+    # Currently this only supports `<begin>/<end>` style time intervals.
     def self.iso8601(str)
       new *str.split("/").map{|s| Time.iso8601(s)}
 
