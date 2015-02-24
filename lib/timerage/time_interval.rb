@@ -23,7 +23,7 @@ module Timerage
       end
     end
 
-    # Returns and ISO8601 interval representation of self
+    # Returns an ISO8601 interval representation of self
     # Takes same args as Time#iso8601
     def iso8601(*args)
       "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
@@ -58,6 +58,18 @@ module Timerage
           y << last = last + step
         end
       end
+    end
+
+    # class methods
+    # =============
+
+    # Returns a new TimeInterval representation of the iso8601 interval
+    # represented by the specified string.
+    def self.iso8601(str)
+      new *str.split("/").map{|s| Time.iso8601(s)}
+
+    rescue ArgumentError
+      raise ArgumentError, "Invalid iso8601 interval: #{str.inspect}"
     end
   end
 end
