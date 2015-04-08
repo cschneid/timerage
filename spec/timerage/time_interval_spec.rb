@@ -34,7 +34,29 @@ describe Timerage::TimeInterval do
   specify { expect(interval.iso8601(3))
             .to eq "#{interval.begin.iso8601(3)}/#{interval.end.iso8601(3)}" }
 
-  context "interval include end" do
+  describe "+" do
+    let(:adjacent_preceding_time_range) { interval.begin-42..interval.begin }
+    let(:adjacent_following_time_range) { interval.end..interval.end+42 }
+    let(:nonadjacent_time_range) { interval.end+1..interval.end+42 }
+
+    specify { expect( interval + adjacent_following_time_range  )
+              .to be_kind_of described_class }
+    specify { expect( interval + adjacent_following_time_range  )
+              .to end_at adjacent_following_time_range.end }
+    specify { expect( interval + adjacent_following_time_range )
+              .to begin_at interval.begin }
+
+    specify { expect( interval + adjacent_preceding_time_range )
+              .to be_kind_of described_class }
+    specify { expect( interval + adjacent_preceding_time_range  )
+              .to end_at interval.end }
+    specify { expect( interval + adjacent_preceding_time_range  )
+              .to begin_at adjacent_preceding_time_range.begin }
+
+    specify { expect{ interval + nonadjacent_time_range }.to raise_error ArgumentError }
+  end
+
+  context "inclusive end" do
     specify { expect(interval.exclude_end?).to be false }
     specify { expect(interval.cover? now).to be true }
     specify { expect(interval.cover? now - duration).to be true }
@@ -51,7 +73,7 @@ describe Timerage::TimeInterval do
     end
   end
 
-  context "interval exclude end" do
+  context "exclusive end" do
     subject(:interval) { described_class.new(now-duration...now) }
 
     specify { expect(interval.exclude_end?).to be true }
@@ -69,6 +91,18 @@ describe Timerage::TimeInterval do
   matcher :behave_like_a do |expected|
     match do |actual|
       Set[*expected.instance_methods].subset? Set[*actual.methods]
+    end
+  end
+
+  matcher :begin_at do |expected|
+    match do |actual|
+      expect( actual.begin ).to eq expected
+    end
+  end
+
+  matcher :end_at do |expected|
+    match do |actual|
+      expect( actual.end ).to eq expected
     end
   end
 end
