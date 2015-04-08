@@ -40,15 +40,15 @@ module Timerage
       "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
     end
 
+    def adjacent_to?(other)
+      other.begin == self.end || other.end == self.begin
+    end
+
     protected
 
     def rangeish?(an_obj)
       an_obj.respond_to?(:begin) &&
         an_obj.respond_to?(:end)
-    end
-
-    def adjacent_to?(other)
-      other.begin == self.end || other.end == self.begin
     end
 
     # ---
