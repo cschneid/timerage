@@ -23,10 +23,25 @@ module Timerage
       end
     end
 
+    # Return new TimeInterval that is the concatenation of self and
+    # other (if possible).
+    #
+    # Raises ArgumentError if other is not adjacent to self
+    # chronologically.
+    def +(other)
+      fail ArgumentError, "other must be adjacent to self" unless adjacent_to?(other)
+
+      self.class.new([self.begin, other.begin].min, [self.end, other.end].max)
+    end
+
     # Returns an ISO8601 interval representation of self
     # Takes same args as Time#iso8601
     def iso8601(*args)
       "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
+    end
+
+    def adjacent_to?(other)
+      other.begin == self.end || other.end == self.begin
     end
 
     protected
