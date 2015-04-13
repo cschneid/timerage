@@ -44,6 +44,42 @@ module Timerage
       other.begin == self.end || other.end == self.begin
     end
 
+
+    def cover?(time_or_interval)
+      return super unless rangeish?(time_or_interval)
+
+      other = time_or_interval
+
+      self.begin <= other.begin &&
+        if self.exclude_end? && other.exclude_end?
+          self.end > other.begin && self.begin < other.end && other.end <= self.end
+
+        elsif self.exclude_end?
+          self.end > other.begin && self.begin <= other.end && other.end < self.end
+
+        elsif other.exclude_end?
+          self.end >= other.begin && self.begin < other.end && other.end <= self.end
+
+        else
+          self.end >= other.begin && self.begin <= other.end && other.end <= self.end
+        end
+    end
+
+    def overlap?(other)
+      cover?(other) ||
+        other.cover?(self) ||
+        cover?(other.begin) ||
+        other.cover?(self.begin) ||
+        cover?(other.end) && (!other.exclude_end? || other.end != self.begin) ||
+        other.cover?(self.end) && (!self.exclude_end? || other.begin != self.end)
+    end
+
+    def <=>(other)
+      return super unless rangeish?(other)
+
+      self.begin <=> other.begin
+    end
+
     protected
 
     def rangeish?(an_obj)

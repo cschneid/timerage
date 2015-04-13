@@ -34,6 +34,22 @@ describe Timerage::TimeInterval do
   specify { expect(interval.iso8601(3))
             .to eq "#{interval.begin.iso8601(3)}/#{interval.end.iso8601(3)}" }
 
+  specify { expect(interval.cover? interval.begin+1..interval.end-1).to be_truthy }
+  specify { expect(interval.cover? interval.begin...interval.end).to be_truthy }
+  specify { expect(interval.cover? interval.begin-1..interval.end-1).to be_falsy }
+  specify { expect(interval.cover? interval.begin+1..interval.end+1).to be_falsy }
+
+  specify { expect(interval.overlap? interval.begin+1..interval.end-1).to be_truthy }
+  specify { expect(interval.overlap? interval.begin...interval.end).to be_truthy }
+  specify { expect(interval.overlap? interval.begin-1..interval.end-1).to be_truthy }
+  specify { expect(interval.overlap? interval.begin+1..interval.end+1).to be_truthy }
+  specify { expect(interval.overlap? interval.end+1..interval.end+2).to be_falsy }
+  specify { expect(interval.overlap? interval.begin-2..interval.begin-1).to be_falsy }
+
+  specify { expect(interval <=> (interval.begin-2..interval.begin-1)).to eq 1}
+  specify { expect(interval <=> (interval.end+1..interval.end+2)).to eq -1}
+  specify { expect(interval <=> interval).to eq 0}
+
   describe "+" do
     let(:adjacent_preceding_time_range) { interval.begin-42..interval.begin }
     let(:adjacent_following_time_range) { interval.end..interval.end+42 }
@@ -56,6 +72,7 @@ describe Timerage::TimeInterval do
     specify { expect{ interval + nonadjacent_time_range }.to raise_error ArgumentError }
   end
 
+
   context "inclusive end" do
     specify { expect(interval.exclude_end?).to be false }
     specify { expect(interval.cover? now).to be true }
@@ -63,6 +80,13 @@ describe Timerage::TimeInterval do
     specify { expect(interval.cover? now - (duration/2)).to be true }
     specify { expect(interval.cover? now + 1).to be false }
     specify { expect(interval.cover? now - (duration + 1)).to be false }
+    specify { expect(interval.cover? interval.begin..interval.end).to be_truthy }
+    specify { expect(interval.cover? interval.begin...interval.end).to be_truthy}
+
+    specify { expect(interval.overlap? interval.begin..interval.end).to be_truthy }
+    specify { expect(interval.overlap? interval.begin...interval.end).to be_truthy }
+    specify { expect(interval.overlap? interval.end-1..interval.end+1).to be_truthy }
+    specify { expect(interval.overlap? interval.end..interval.end+1).to be_truthy }
 
     specify { expect{|b| interval.step(1200, &b) }
         .to yield_successive_args now-duration, now-(duration-1200), now-(duration-2400), now }
@@ -82,6 +106,14 @@ describe Timerage::TimeInterval do
     specify { expect(interval.cover? now - (duration/2)).to be true }
     specify { expect(interval.cover? now + 1).to be false }
     specify { expect(interval.cover? now - (duration + 1)).to be false }
+    specify { expect(interval.cover? interval.end).to be false }
+    specify { expect(interval.cover? interval.begin..interval.end).to be_falsy }
+    specify { expect(interval.cover? interval.begin...interval.end).to be_truthy}
+
+    specify { expect(interval.overlap? interval.begin..interval.end).to be_truthy }
+    specify { expect(interval.overlap? interval.begin...interval.end).to be_truthy }
+    specify { expect(interval.overlap? interval.end-1..interval.end+1).to be_truthy }
+    specify { expect(interval.overlap? interval.end..interval.end+1).to be_falsy }
 
     specify { expect{|b| interval.step(1200, &b) }
         .to yield_successive_args now-duration, now-(duration-1200), now-(duration-2400) }
