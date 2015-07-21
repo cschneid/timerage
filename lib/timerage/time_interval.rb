@@ -15,6 +15,11 @@ module Timerage
 
     alias_method :to_time, :begin
 
+    # Returns number of seconds in this interval
+    def duration
+      self.end - self.begin
+    end
+
     def step(n, &blk)
       if block_given?
         time_enumerator(n).each(&blk)

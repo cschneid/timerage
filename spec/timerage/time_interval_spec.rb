@@ -33,6 +33,7 @@ describe Timerage::TimeInterval do
             .to eq "#{interval.begin.iso8601}/#{interval.end.iso8601}" }
   specify { expect(interval.iso8601(3))
             .to eq "#{interval.begin.iso8601(3)}/#{interval.end.iso8601(3)}" }
+  specify { expect( interval.duration).to eq duration  }
 
   specify { expect(interval.cover? interval.begin+1..interval.end-1).to be_truthy }
   specify { expect(interval.cover? interval.begin...interval.end).to be_truthy }
@@ -143,6 +144,7 @@ describe Timerage::TimeInterval do
               .to eq [now-duration...now-duration/2, now-duration/2...now] }
     specify { expect( interval.slice((duration/2) + 1) )
               .to eq [now-duration...((now-duration/2)+1), (now-duration/2)+1...now] }
+    specify { expect( interval.duration).to eq duration }
   end
 
   matcher :behave_like_a do |expected|
