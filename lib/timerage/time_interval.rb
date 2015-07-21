@@ -27,17 +27,8 @@ module Timerage
       time_enumerator(seconds)
         .map{|t|
           end_time = [t+seconds, self.end].min
-          inclusive = (self.end == t && !exclude_end?) || t+seconds > self.end
+          inclusive = (t == end_time || t+seconds > self.end) && !exclude_end?
           TimeInterval.new(t, end_time, !inclusive) }
-    end
-
-    def ==(other)
-      self.begin == other.begin &&
-        self.end == other.end &&
-        self.exclude_end? == other.exclude_end?
-
-    rescue NoMethodError
-      false
     end
 
     # Return new TimeInterval that is the concatenation of self and
