@@ -23,6 +23,23 @@ module Timerage
       end
     end
 
+    def slice(seconds)
+      time_enumerator(seconds)
+        .map{|t|
+          end_time = [t+seconds, self.end].min
+          inclusive = (self.end == t && !exclude_end?) || t+seconds > self.end
+          TimeInterval.new(t, end_time, !inclusive) }
+    end
+
+    def ==(other)
+      self.begin == other.begin &&
+        self.end == other.end &&
+        self.exclude_end? == other.exclude_end?
+
+    rescue NoMethodError
+      false
+    end
+
     # Return new TimeInterval that is the concatenation of self and
     # other (if possible).
     #
@@ -43,7 +60,6 @@ module Timerage
     def adjacent_to?(other)
       other.begin == self.end || other.end == self.begin
     end
-
 
     def cover?(time_or_interval)
       return super unless rangeish?(time_or_interval)
@@ -78,6 +94,15 @@ module Timerage
       return super unless rangeish?(other)
 
       self.begin <=> other.begin
+    end
+
+    def ==(other)
+      self.begin == other.begin &&
+        self.end == other.end &&
+        self.exclude_end? == other.exclude_end?
+
+    rescue NoMethodError
+      false
     end
 
     protected
