@@ -101,6 +101,24 @@ module Timerage
       false
     end
 
+    # Returns a new TimeInterval that is the intersection of `self` and `other`.
+    def &(other)
+      fail ArgumentError, "#{other} does not overlap #{self}" unless self.overlap? other
+
+      new_begin = [self.begin, other.begin].max
+      new_end,ex_end = if self.end > other.end
+                         [other.end, other.exclude_end?]
+                       elsif self.end < other.end
+                         [self.end, self.exclude_end?]
+                       elsif self.exclude_end? || other.exclude_end?
+                         [self.end, true]
+                       else
+                         [self.end, false]
+                       end
+
+      self.class.new(new_begin, new_end, ex_end)
+    end
+
     protected
 
     def rangeish?(an_obj)

@@ -51,6 +51,20 @@ describe Timerage::TimeInterval do
   specify { expect(interval <=> (interval.end+1..interval.end+2)).to eq -1}
   specify { expect(interval <=> interval).to eq 0}
 
+  describe "#&" do
+    specify { expect( interval & interval ).to eq interval }
+    specify { expect( interval & (interval.begin-1..interval.end+1) ).to eq interval }
+    specify { expect( interval & (interval.begin+1..interval.end+1) )
+              .to eq interval.begin+1..interval.end }
+    specify { expect( interval & (interval.begin-1..interval.end-1) )
+              .to eq interval.begin..interval.end-1 }
+    specify { expect( interval & (interval.begin...interval.end) ).to eq interval.begin...interval.end }
+    specify { expect( interval & (interval.begin...interval.end-1) )
+              .to eq interval.begin...interval.end-1 }
+    specify { expect( described_class.new(interval.begin...interval.end-1) & interval )
+              .to eq described_class.new(interval.begin...interval.end-1) }
+  end
+
   describe "==" do
     specify { expect( described_class.new(interval) == interval ).to be true }
     specify { expect( described_class.new(interval.begin, interval.end) == interval ).to be true }
