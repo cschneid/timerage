@@ -62,28 +62,54 @@ module Timerage
 
       other = time_or_interval
 
-      self.begin <= other.begin &&
-        if self.exclude_end? && other.exclude_end?
-          self.end > other.begin && self.begin < other.end && other.end <= self.end
+      self_exclude_end, other_exclude_end = self.exclude_end?, other.exclude_end?
+      self_begin, other_begin = self.begin, other.begin
+      self_end, other_end = self.end, other.end
 
-        elsif self.exclude_end?
-          self.end > other.begin && self.begin <= other.end && other.end < self.end
+      self_begin <= other_begin &&
+        if self_exclude_end && other_exclude_end
+          self_end > other_begin && self_begin < other_end && other_end <= self_end
 
-        elsif other.exclude_end?
-          self.end >= other.begin && self.begin < other.end && other.end <= self.end
+        elsif self_exclude_end
+          self_end > other_begin && self_begin <= other_end && other_end < self_end
+
+        elsif other_exclude_end
+          self_end >= other_begin && self_begin < other_end && other_end <= self_end
 
         else
-          self.end >= other.begin && self.begin <= other.end && other.end <= self.end
+          self_end >= other_begin && self_begin <= other_end && other_end <= self_end
         end
     end
 
     def overlap?(other)
-      cover?(other) ||
-        other.cover?(self) ||
-        cover?(other.begin) ||
-        other.cover?(self.begin) ||
-        cover?(other.end) && (!other.exclude_end? || other.end != self.begin) ||
-        other.cover?(self.end) && (!self.exclude_end? || other.begin != self.end)
+      if rangeish?(other)
+        overlap_range?(other)
+      else
+        overlap_instant?(other)
+      end
+    end
+
+    def overlap_range?(other)
+      # return true if self.begin == other.begin
+      earliest, latest = if self.begin <= other.begin
+                           [self, other]
+                         else
+                           [other, self]
+                         end
+
+      latest_begin, earliest_end = latest.begin, earliest.end
+      return true  if latest_begin < earliest_end
+      return false if earliest_end < latest_begin
+
+      !earliest.exclude_end?
+    end
+
+    def overlap_instant?(time)
+      time > self.begin && if self.exclude_end?
+        time < self.end
+      else
+        time <= self.end
+      end
     end
 
     def <=>(other)
