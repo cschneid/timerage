@@ -53,6 +53,11 @@ module Timerage
       "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
     end
 
+    def getutc
+      return self if self.begin.utc? && self.end.utc?
+      self.class.new(self.begin.getutc, self.end.getutc, self.exclude_end?)
+    end
+
     def adjacent_to?(other)
       other.begin == self.end || other.end == self.begin
     end
