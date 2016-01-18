@@ -10,8 +10,8 @@ module Timerage
   # --
   #
   # Currently this only supports `<begin>/<end>` style time intervals.
-  def self.parse_iso8601(str)
-    TimeInterval.iso8601(str)
+  def self.parse_iso8601(str, exclusive_end: true)
+    TimeInterval.iso8601(str, exclusive_end: exclusive_end)
   rescue ArgumentError
     Time.iso8601(str)
   end
@@ -27,6 +27,30 @@ module Timerage
 
     def to_time_interval
       Timerage::TimeInterval.new(self)
+    end
+  end
+end
+
+module Kernel
+  def Timerage(time_or_time_interval_ish)
+    thing = time_or_time_interval_ish
+
+    case thing
+    when ->(x) { x.respond_to? :to_time_interval }
+      thing
+
+    when ->(x) { x.respond_to? :to_time }
+      thing.to_time
+
+    when ->(x) { x.respond_to? :exclude_end? }
+      Timerage::TimeInterval.new(thing)
+
+    when String
+      Timerage.parse_iso8601(thing)
+
+    else
+      fail TypeError, "unable to coerce #{thing} to a time or interval"
+
     end
   end
 end

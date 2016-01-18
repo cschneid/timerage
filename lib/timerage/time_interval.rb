@@ -13,6 +13,10 @@ module Timerage
       super rng
     end
 
+    def to_time_interval
+      self
+    end
+
     alias_method :to_time, :begin
 
     # Returns number of seconds in this interval
@@ -141,11 +145,12 @@ module Timerage
     # --
     #
     # Currently this only supports `<begin>/<end>` style time intervals.
-    def self.iso8601(str)
-      new *str.split("/").map{|s| Time.iso8601(s)}
+    def self.iso8601(str, exclusive_end: true)
+      new *str.split("/").map{|s| Time.iso8601(s)}, exclusive_end
 
     rescue ArgumentError
       raise ArgumentError, "Invalid iso8601 interval: #{str.inspect}"
     end
   end
+
 end
