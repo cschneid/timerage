@@ -19,6 +19,24 @@ describe Timerage::TimeInterval do
                 .to raise_error ArgumentError }
   end
 
+  describe "#getutc" do
+    subject(:interval_utc) { described_class.new(now-duration, now).getutc }
+    specify { expect(interval_utc).to be_kind_of described_class }
+
+    context "interval not in utc" do
+      specify { expect(now).not_to be_utc }
+      specify { expect(interval_utc.begin).to be_utc }
+      specify { expect(interval_utc.end).to be_utc }
+    end
+
+    context "interval already in utc" do
+      let(:now) { Time.now.getutc }
+      specify { expect(now).to be_utc }
+      specify { expect(interval_utc.begin).to be_utc }
+      specify { expect(interval_utc.end).to be_utc }
+    end
+  end
+
   subject(:interval) { described_class.new(now-duration, now) }
 
   it { is_expected.to behave_like_a Range }
