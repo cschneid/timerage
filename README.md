@@ -1,6 +1,6 @@
 # Timerage
 
-Simple refinement to make Time Ranges work a little.
+Time Ranges that are actually useful.
 
 ## Installation
 
@@ -20,15 +20,66 @@ Or install it yourself as:
 
 ```ruby
 require 'timerage'
+```
 
-class MyClass
-  using Timerage
+### Coercion to Time (related) objects
 
-  # Step over these two times in 10 second steps
-  def my_method(time1, time2)
-    (time1..time2).step(10) { |time| puts time}
-  end
-end
+``` ruby
+a_time = Timerage("2016-01-18T22:25:37Z")
+# => 2016-01-18 22:25:37 +0000
+
+Timerage(a_time)
+# => 2016-01-18 22:25:37 +0000
+
+Timerage("2016-01-18T21:25:37+00:00/2016-01-18T22:25:37+00:00")
+# => 2016-01-18 21:25:37 +0000...2016-01-18 22:25:37 +0000
+
+interval = Timerage((a_time-3600)...a_time)
+# => 2016-01-18 21:25:37 +0000...2016-01-18 22:25:37 +0000
+```
+
+### Stepping over a time inteval
+
+```ruby
+interval.step(30*60).map { |time| time }
+# => [2016-01-18 21:25:37 +0000, 2016-01-18 21:55:37 +0000]
+```
+
+### Slicing a time interval
+
+```ruby
+interval.slice(30*60).map { |time| time }
+# => [2016-01-18 21:25:37 UTC...2016-01-18 21:55:37 UTC, 2016-01-18 21:55:37 UTC...2016-01-18 22:25:37 UTC]
+```
+
+### ISO 8601 output
+
+```ruby
+interval.iso8601
+# => "2016-01-18T21:25:37+00:00/2016-01-18T22:25:37+00:00"
+```
+
+### Comparisons
+
+Supports most range/set comparisons
+
+* `#overlap?`
+* `#cover?`
+* `#adjacent_to?`
+* `#==`
+
+### Concatenation
+
+```ruby
+interval + Timerage("2016-01-18T20:25:37+00:00/2016-01-18T21:25:37+00:00")
+# => 2016-01-18 20:25:37 UTC..2016-01-18 22:25:37 UTC
+```
+
+### Duration
+
+```ruby
+interval.duration
+# => 3600.0
 ```
 
 ## Gotchas
