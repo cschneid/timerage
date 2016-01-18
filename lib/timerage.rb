@@ -39,14 +39,14 @@ module Kernel
     when ->(x) { x.respond_to? :to_time_interval }
       thing
 
-    when ->(x) { x.respond_to? :to_time }
-      thing.to_time
-
     when ->(x) { x.respond_to? :exclude_end? }
       Timerage::TimeInterval.new(thing)
 
-    when String
-      Timerage.parse_iso8601(thing)
+    when ->(x) { x.respond_to? :to_str }
+      Timerage.parse_iso8601(thing.to_str)
+
+    when ->(x) { x.respond_to? :to_time }
+      thing.to_time
 
     else
       fail TypeError, "unable to coerce #{thing} to a time or interval"

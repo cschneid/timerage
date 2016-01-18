@@ -146,7 +146,7 @@ module Timerage
     #
     # Currently this only supports `<begin>/<end>` style time intervals.
     def self.iso8601(str, exclusive_end: true)
-      new *str.split("/").map{|s| Time.iso8601(s)}, exclusive_end
+      new *str.split("/", 2).map{|s| Time.iso8601(s)}, exclusive_end
 
     rescue ArgumentError
       raise ArgumentError, "Invalid iso8601 interval: #{str.inspect}"
