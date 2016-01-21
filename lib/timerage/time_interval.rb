@@ -81,11 +81,11 @@ module Timerage
     end
 
     def overlap?(other)
-      earliest, latest = if self.begin <= other.begin
-                           [self, other]
-                         else
-                           [other, self]
-                         end
+      if self.begin <= other.begin
+        earliest, latest = self, other
+      else
+        earliest, latest = other, self
+      end
 
       latest_begin, earliest_end = latest.begin, earliest.end
       return true  if latest_begin < earliest_end
