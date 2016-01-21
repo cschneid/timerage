@@ -2,15 +2,15 @@ require "delegate"
 
 module Timerage
   # A range of time. The exposes the Range like interface.
-  class TimeInterval < DelegateClass(Range)
-    def initialize(*args)
-      rng = if rangeish?(args.first)
-              args.first
-            else
-              Range.new(*args)
-            end
+  class TimeInterval < Range
 
-      super rng
+    class << self
+      def new(*args)
+        args = [args.first.begin, args.first.end, args.first.exclude_end?] if args.first.respond_to?(:exclude_end?) 
+        new_obj = allocate
+        new_obj.send(:initialize, *args)
+        new_obj
+      end
     end
 
     def to_time_interval
@@ -81,11 +81,11 @@ module Timerage
     end
 
     def overlap?(other)
-      earliest, latest = if self.begin <= other.begin
-                           [self, other]
-                         else
-                           [other, self]
-                         end
+      if self.begin <= other.begin
+        earliest, latest = self, other
+      else
+        earliest, latest = other, self
+      end
 
       latest_begin, earliest_end = latest.begin, earliest.end
       return true  if latest_begin < earliest_end
