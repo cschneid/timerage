@@ -1,4 +1,5 @@
 require_relative "../spec_helper"
+require "active_support/all"
 
 describe Timerage::TimeInterval do
   let(:now) { Time.now }
@@ -178,6 +179,41 @@ describe Timerage::TimeInterval do
               .to eq [now-duration...((now-duration/2)+1), (now-duration/2)+1...now] }
     specify { expect( interval.duration).to eq duration }
   end
+
+  context "exclusive 0 length interval" do
+    subject(:interval) { described_class.new(now...now) }
+    specify { expect{ |b| subject.step(1, &b) }.not_to yield_control }
+  end
+
+  context "inclusive 0 length interval" do
+    subject(:interval) { described_class.new(now..now) }
+    specify { expect{ |b| subject.step(1, &b) }.to yield_control.once }
+  end
+
+  context "includes leap day" do
+    subject(:interval) { described_class.new(before_leap_day..after_leap_day) }
+    specify { expect{ |b| subject.step(1.day, &b) }.to yield_control.exactly(3).times }
+    specify { expect{ |b| subject.step(86_400, &b) }.to yield_control.exactly(3).times }
+  end
+
+  context "transition into dst with explicit time zone" do
+    subject(:interval) { described_class.new(before_dst..after_dst) }
+    specify { expect{ |b| subject.step(1.hour, &b) }.to yield_control.exactly(2).times }
+    specify { expect{ |b| subject.step(3_600, &b) }.to yield_control.exactly(2).times }
+  end
+
+  context "transition into dst without explicit time zone" do
+    subject(:interval) { described_class.new(before_dst..(before_dst + 1.hour)) }
+    specify { expect{ |b| subject.step(1.hour, &b) }.to yield_control.exactly(2).times }
+    specify { expect{ |b| subject.step(3_600, &b) }.to yield_control.exactly(2).times }
+  end
+
+  let(:leap_day) { Time.parse("2016-02-29 12:00:00 UTC") }
+  let(:before_leap_day) { leap_day - 1.day }
+  let(:after_leap_day) { leap_day + 1.day}
+
+  let(:before_dst) { Time.parse("2016-03-13 01:30:00 MST") }
+  let(:after_dst) { Time.parse("2016-03-13 03:30:00 MDT") }
 
   matcher :behave_like_a do |expected|
     match do |actual|
