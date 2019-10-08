@@ -47,7 +47,13 @@ describe Timerage::TimeInterval do
   specify { expect(interval.to_time).to (be >= interval.begin)
       .and (be <= interval.end) }
   specify { expect{|b| interval.step(1200, &b) }
-      .to yield_control.at_least(:once) }
+              .to yield_control.at_least(:once) }
+
+  specify { expect{|b|
+              Timerage(Time.parse("2019-08-01 01:00:00 UTC")...Time.parse("2019-09-01 01:00:00 UTC"))
+                .step(1.month, &b)
+            }.to yield_control.exactly(:once) }
+
   specify { expect(interval.iso8601)
             .to eq "#{interval.begin.iso8601}/#{interval.end.iso8601}" }
   specify { expect(interval.iso8601(3))
