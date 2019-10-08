@@ -6,7 +6,7 @@ module Timerage
 
     class << self
       def new(*args)
-        args = [args.first.begin, args.first.end, args.first.exclude_end?] if args.first.respond_to?(:exclude_end?) 
+        args = [args.first.begin, args.first.end, args.first.exclude_end?] if args.first.respond_to?(:exclude_end?)
         new_obj = allocate
         new_obj.send(:initialize, *args)
         new_obj
@@ -135,13 +135,12 @@ module Timerage
     end
 
     def time_enumerator(step)
-      count = (self.end - self.begin).div(step) + 1
-      count -= 1 if exclude_end? and (self.end - self.begin) % step == 0
-      # We've included our end if it should be
+      next_offset = 0.seconds
 
       Enumerator.new do |y|
-        (count).times do |offset|
-          y << self.begin + (step * offset)
+        while self.cover?(self.begin + next_offset)
+          y << self.begin + next_offset
+          next_offset += step
         end
       end
     end
