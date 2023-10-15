@@ -135,7 +135,7 @@ module Timerage
     end
 
     def time_enumerator(step)
-      next_offset = 0.seconds
+      next_offset = (self.begin + step).is_a?(Date) ? 0.days : 0.seconds
 
       Enumerator.new do |y|
         while self.cover?(self.begin + next_offset)

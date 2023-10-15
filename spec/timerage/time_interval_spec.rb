@@ -214,6 +214,22 @@ describe Timerage::TimeInterval do
     specify { expect{ |b| subject.step(3_600, &b) }.to yield_control.exactly(2).times }
   end
 
+  context "When given date range" do
+    it "returns date objects when stepping through the range with a day duration" do
+      date_range = Date.new(2020, 1, 1)..Date.new(2020,1,3)
+      described_class.new(date_range).step(1.day) do |date|
+        expect(date).to be_kind_of Date
+      end
+    end
+
+    it "returns Time objects when stepping through the range with an hour duration" do
+      date_range = Date.new(2020, 1, 1)..Date.new(2020,1,2)
+      described_class.new(date_range).step(6.hours) do |date|
+        expect(date).to be_kind_of Time
+      end
+    end
+  end
+
   let(:leap_day) { Time.parse("2016-02-29 12:00:00 UTC") }
   let(:before_leap_day) { leap_day - 1.day }
   let(:after_leap_day) { leap_day + 1.day}
