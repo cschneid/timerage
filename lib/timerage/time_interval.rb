@@ -5,11 +5,34 @@ module Timerage
   class TimeInterval < Range
 
     class << self
+      # Returns a new TimeInterval
+      #
+      # start_time - the beginning of the interval
+      # end_time   - the end of the interval
+      # exclude_end - whether the end time is excluded from the interval
       def new(*args)
-        args = [args.first.begin, args.first.end, args.first.exclude_end?] if args.first.respond_to?(:exclude_end?)
-        new_obj = allocate
-        new_obj.send(:initialize, *args)
-        new_obj
+        return from_range(*args) if args.first.respond_to?(:exclude_end?)
+
+        super
+      end
+
+      # Returns a new TimeInterval
+      #
+      # time - the beginning or end of the interval
+      # duration - the duration of the interval, if negative the
+      #   interval will start before`time`
+      # exclude_end - whether the end time is excluded from the interval
+      def from_time_and_duration(time, duration, exclude_end: true)
+        if duration >= 0
+          new(time, time + duration, exclude_end)
+        else
+          new(time + duration, time, exclude_end)
+        end
+      end 
+
+      # Returns a new TimeInterval based on the specified range 
+      def from_range(range)
+        new(range.begin, range.end, range.exclude_end?)
       end
     end
 

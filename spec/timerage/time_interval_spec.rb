@@ -6,10 +6,16 @@ describe Timerage::TimeInterval do
   let(:duration) { 3600 }
 
   describe "creation" do
-    specify { expect(described_class.new(now-1..now)).to be_kind_of described_class }
-    specify { expect(described_class.new(now-1, now)).to be_kind_of described_class }
-    specify { expect(described_class.new(now-1, now, true)).to be_kind_of described_class }
-    specify { expect(described_class.new(now-1, now, false )).to be_kind_of described_class }
+    specify { expect(described_class.new(now-1.day, now))
+      .to be_kind_of(described_class).and eq now-1.day..now }
+    specify { expect(described_class.new(now-1.day, now, true))
+      .to be_kind_of(described_class).and eq now-1.day...now }
+    specify { expect(described_class.new(now-1.day, now, false ))
+      .to be_kind_of(described_class).and eq now-1.day..now }
+
+    it "support new(range) for backwards compatibility" do
+      expect(described_class.new((now-1.day)..now)).to eq (now-1.day)..now 
+    end
   end
 
   describe ".iso8601" do
@@ -86,12 +92,12 @@ describe Timerage::TimeInterval do
     specify { expect( interval & (interval.begin...interval.end) ).to eq interval.begin...interval.end }
     specify { expect( interval & (interval.begin...interval.end-1) )
               .to eq interval.begin...interval.end-1 }
-    specify { expect( described_class.new(interval.begin...interval.end-1) & interval )
-              .to eq described_class.new(interval.begin...interval.end-1) }
+    specify { expect( described_class.new(interval.begin, interval.end-1) & interval )
+              .to eq described_class.new(interval.begin,interval.end-1) }
   end
 
   describe "==" do
-    specify { expect( described_class.new(interval) == interval ).to be true }
+    specify { expect( described_class.from_range(interval) == interval ).to be true }
     specify { expect( described_class.new(interval.begin, interval.end) == interval ).to be true }
   end
 
@@ -159,7 +165,7 @@ describe Timerage::TimeInterval do
   end
 
   context "exclusive end" do
-    subject(:interval) { described_class.new(now-duration...now) }
+    subject(:interval) { described_class.from_range(now-duration...now) }
 
     specify { expect(interval.exclude_end?).to be true }
     specify { expect(interval.cover? now).to be false }
@@ -187,29 +193,29 @@ describe Timerage::TimeInterval do
   end
 
   context "exclusive 0 length interval" do
-    subject(:interval) { described_class.new(now...now) }
+    subject(:interval) { described_class.from_range(now...now) }
     specify { expect{ |b| subject.step(1, &b) }.not_to yield_control }
   end
 
   context "inclusive 0 length interval" do
-    subject(:interval) { described_class.new(now..now) }
+    subject(:interval) { described_class.from_range(now..now) }
     specify { expect{ |b| subject.step(1, &b) }.to yield_control.once }
   end
 
   context "includes leap day" do
-    subject(:interval) { described_class.new(before_leap_day..after_leap_day) }
+    subject(:interval) { described_class.new(before_leap_day, after_leap_day) }
     specify { expect{ |b| subject.step(1.day, &b) }.to yield_control.exactly(3).times }
     specify { expect{ |b| subject.step(86_400, &b) }.to yield_control.exactly(3).times }
   end
 
   context "transition into dst with explicit time zone" do
-    subject(:interval) { described_class.new(before_dst..after_dst) }
+    subject(:interval) { described_class.new(before_dst, after_dst) }
     specify { expect{ |b| subject.step(1.hour, &b) }.to yield_control.exactly(2).times }
     specify { expect{ |b| subject.step(3_600, &b) }.to yield_control.exactly(2).times }
   end
 
   context "transition into dst without explicit time zone" do
-    subject(:interval) { described_class.new(before_dst..(before_dst + 1.hour)) }
+    subject(:interval) { described_class.new(before_dst, (before_dst + 1.hour)) }
     specify { expect{ |b| subject.step(1.hour, &b) }.to yield_control.exactly(2).times }
     specify { expect{ |b| subject.step(3_600, &b) }.to yield_control.exactly(2).times }
   end

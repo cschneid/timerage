@@ -16,17 +16,30 @@ module Timerage
     Time.iso8601(str)
   end
 
+  # Returns a new TimeInterval from a time and duration or two times.
+  #
+  # signature:
+  #  Interval(begin_time, end_time, exclude_end: true)
+  #  Interval(begin_or_end_time, duration, exclude_end: true)
+  def self.Interval(begin_or_end_time, end_time_or_duration, exclude_end: true)
+    if end_time_or_duration.respond_to?(:since)
+      TimeInterval.from_time_and_duration(begin_or_end_time, end_time_or_duration, exclude_end: exclude_end)
+    else
+      TimeInterval.new(begin_or_end_time, end_time_or_duration, exclude_end)
+    end
+  end
+
   refine Range do
     def step(n, &blk)
       if self.begin.kind_of?(Time) || self.begin.kind_of?(Date)
-        Timerage::TimeInterval.new(self).step(n, &blk)
+        Timerage::TimeInterval.from_range(self).step(n, &blk)
       else
         super
       end
     end
 
     def to_time_interval
-      Timerage::TimeInterval.new(self)
+      Timerage::TimeInterval.from_range(self)
     end
   end
 end
@@ -40,7 +53,7 @@ module Kernel
       thing
 
     when ->(x) { x.respond_to? :exclude_end? }
-      Timerage::TimeInterval.new(thing)
+      Timerage::TimeInterval.from_range(thing)
 
     when ->(x) { x.respond_to? :to_str }
       Timerage.parse_iso8601(thing.to_str)
