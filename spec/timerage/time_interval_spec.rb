@@ -230,6 +230,14 @@ describe Timerage::TimeInterval do
     end
   end
 
+  context "produces complete slices" do
+    it "slices a range into intervals without missing any time inbetween" do
+      range = Timerage(Time.parse("2023-10-31T00:00:00+00:00")...Time.parse("2024-06-30 00:00:00 UTC"))
+      slices = range.slice(1.month)
+      expect(slices.map(&:duration).sum).to eq range.duration
+    end
+  end
+
   let(:leap_day) { Time.parse("2016-02-29 12:00:00 UTC") }
   let(:before_leap_day) { leap_day - 1.day }
   let(:after_leap_day) { leap_day + 1.day}

@@ -32,12 +32,12 @@ module Timerage
       end
     end
 
-    def slice(seconds)
-      time_enumerator(seconds)
-        .map{|t|
-          end_time = [t+seconds, self.end].min
-          inclusive = (t == end_time || t+seconds > self.end) && !exclude_end?
-          TimeInterval.new(t, end_time, !inclusive) }
+    def slice(duration)
+      time_enumerator(duration)
+        .each_cons(2).map { |s_begin, s_end| TimeInterval.new(s_begin, s_end, exclusive_end_slice?(s_end)) }
+        .then do |slices|
+          slices << TimeInterval.new(slices.last.end, self.end, exclusive_end_slice?(slices.last.end + duration)) if slices.present?
+        end
     end
 
     # Return new TimeInterval that is the concatenation of self and
@@ -132,6 +132,10 @@ module Timerage
     def rangeish?(an_obj)
       an_obj.respond_to?(:begin) &&
         an_obj.respond_to?(:end)
+    end
+
+    def exclusive_end_slice?(slice_end)
+      !((slice_end > self.end) && !exclude_end?)
     end
 
     def time_enumerator(step)
