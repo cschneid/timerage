@@ -17,6 +17,22 @@ describe Timerage do
                 .to be_kind_of Time }
     end
 
+    describe ".Interval" do
+      let(:t) { Time.now }
+      let(:one_day) { 1.day }
+
+      specify { expect(described_class.Interval(t, 1.day)).to eq t...(t+1.day) }
+      specify { expect(described_class.Interval(t, 1.day, exclude_end: false)).to eq(t..(t+1.day)) }
+
+      specify { expect(described_class.Interval(t, -1.day)).to eq((t-1.day)...t) }
+      specify { expect(described_class.Interval(t, -1.day, exclude_end: false)).to eq((t+-1.day)..t) }
+
+      specify { expect{ described_class.Interval(t, (t+1.day)).to eq(t...(t+1.day)) } }
+      specify { expect{ described_class.Interval(t, (t+1.day), exclude_end: false).to eq(t..(t+1.day)) } }
+
+      specify { expect{ described_class.Interval(t..(t+1.day)).to eq(t..(t+1.day)) } }
+    end 
+
     context "interval include end" do
       specify { expect{|b| range.step(1200, &b) }
           .to yield_successive_args now-duration, now-(duration-1200), now-(duration-2400), now }
