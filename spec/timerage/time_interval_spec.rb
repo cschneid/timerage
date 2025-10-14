@@ -18,12 +18,52 @@ describe Timerage::TimeInterval do
     end
   end
 
-  describe ".iso8601" do
-    specify { expect(described_class
-                      .iso8601("2001-01-01T00:00:00Z/2001-01-02T00:00:00-06:00"))
-                .to be_kind_of described_class }
-    specify { expect{described_class.iso8601("2001-01-01T00:00:00Z")}
-                .to raise_error ArgumentError }
+  describe ".iso8601" do 
+    specify do
+      expect(described_class.iso8601("2001-01-01T00:00:00Z/2001-01-02T00:00:00-06:00"))
+        .to be_kind_of described_class 
+    end
+
+    specify do
+      expect{described_class.iso8601("2001-01-01T00:00:00Z")}
+        .to raise_error ArgumentError
+    end
+
+    specify do
+      expect(described_class.iso8601("2001-01-01T00:00:00Z/.."))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: Time.parse("2001-01-01T00:00:00Z"), end: nil))
+    end
+
+    specify do
+      expect(described_class.iso8601("\t2001-01-01T00:00:00Z/..\t"))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: Time.parse("2001-01-01T00:00:00Z"), end: nil))
+    end
+
+    specify do
+      expect(described_class.iso8601(" 2001-01-01T00:00:00Z/.. "))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: Time.parse("2001-01-01T00:00:00Z"), end: nil))
+    end
+
+    specify do
+      expect(described_class.iso8601("../2001-01-01T00:00:00Z"))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: nil, end: Time.parse("2001-01-01T00:00:00Z")))
+    end
+
+    specify do
+      expect(described_class.iso8601("\t../2001-01-01T00:00:00Z\t"))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: nil, end: Time.parse("2001-01-01T00:00:00Z")))
+    end
+
+    specify do
+      expect(described_class.iso8601(" ../2001-01-01T00:00:00Z "))
+        .to (be_kind_of described_class)
+          .and (have_attributes(begin: nil, end: Time.parse("2001-01-01T00:00:00Z")))
+    end
   end
 
   describe "#getutc" do
@@ -65,6 +105,18 @@ describe Timerage::TimeInterval do
   specify { expect(interval.iso8601(3))
             .to eq "#{interval.begin.iso8601(3)}/#{interval.end.iso8601(3)}" }
   specify { expect( interval.duration).to eq duration  }
+
+  context "open-ended intervals" do
+    subject(:interval) { described_class.new(now-duration, nil) }
+    specify { expect(interval.iso8601).to eq "#{interval.begin.iso8601}/.." }
+    specify { expect(interval.iso8601(3)).to eq "#{interval.begin.iso8601(3)}/.." }
+  end
+
+  context "open-start intervals" do
+    subject(:interval) { described_class.new(nil, now) }
+    specify { expect(interval.iso8601).to eq "../#{interval.end.iso8601}" }
+    specify { expect(interval.iso8601(3)).to eq "../#{interval.end.iso8601(3)}" }
+  end
 
   specify { expect(interval.cover? interval.begin+1..interval.end-1).to be_truthy }
   specify { expect(interval.cover? interval.begin...interval.end).to be_truthy }
