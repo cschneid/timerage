@@ -77,7 +77,7 @@ module Timerage
     # Returns an ISO8601 interval representation of self
     # Takes same args as Time#iso8601
     def iso8601(*args)
-      "#{self.begin.iso8601(*args)}/#{self.end.iso8601(*args)}"
+      "#{self.begin&.iso8601(*args) || ".."}/#{self.end&.iso8601(*args) || ".."}"
     end
 
     def getutc
@@ -182,7 +182,17 @@ module Timerage
     #
     # Currently this only supports `<begin>/<end>` style time intervals.
     def self.iso8601(str, exclusive_end: true)
-      new *str.split("/", 2).map{|s| Time.iso8601(s)}, exclusive_end
+      str
+        .split("/", 2)
+        .tap { |it| fail ArgumentError, "Invalid iso8601 interval: #{str.inspect}" unless it.size == 2 }
+        .map {|s|
+          if s.strip == ".."
+            nil
+          else
+            Time.iso8601(s)
+          end
+        }
+        .then { |b, e| new(b, e, exclusive_end) }
 
     rescue ArgumentError
       raise ArgumentError, "Invalid iso8601 interval: #{str.inspect}"
